@@ -8,6 +8,19 @@ You are not "choosing Streams over Flink" — you are **deferring the engine cho
 
 ---
 
+## 📅 Implementation Progress
+
+- ✅ **Day 1**: Infrastructure + Repo Layout (Complete)
+- ✅ **Day 2**: Avro Contracts (Complete)
+- ✅ **Day 3**: Python Producer (Complete)
+- ⏳ **Day 4**: Validation + DLQ
+- ⏳ **Day 5**: Kafka Streams Engine
+- ⏳ **Days 6-10**: Testing, Sink, Observability
+
+See `DAY-3-COMPLETE.md` for details on Day 3 implementation.
+
+---
+
 ## 🎯 The Core Idea
 
 Build a pipeline where switching from Kafka Streams to Flink (or any other engine) requires **changing only one component**, not rewriting the entire system.
@@ -117,17 +130,34 @@ docker exec -it kafka kafka-topics --bootstrap-server localhost:9092 --list
 curl http://localhost:8081/subjects
 ```
 
-### 3. Run Components
+### 3. Run Producer (Day 3 ✅)
 
 ```bash
-# Producer (generates events)
-cd producer-python && python main.py
+# Install dependencies
+cd producer-python
+pip install -r requirements.txt
 
-# Kafka Streams Engine
-cd engine-streams-java && ./gradlew run
+# Run producer
+python producer.py
+```
 
-# Sink (to Snowflake)
-cd sink-python && python main.py
+The producer will:
+- Generate 20 orders with realistic lifecycles
+- Inject edge cases (duplicates, out-of-order, late arrivals)
+- Publish to `orders.events.raw` with Avro serialization
+
+### 4. View Messages (Optional)
+
+```bash
+# View raw events
+docker exec orderup-kafka kafka-console-consumer \
+  --bootstrap-server localhost:9092 \
+  --topic orders.events.raw \
+  --from-beginning \
+  --max-messages 10
+
+# Check Schema Registry
+curl http://localhost:8081/subjects
 ```
 
 ---

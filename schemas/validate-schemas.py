@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Validate Day 2 Avro schemas against project requirements.
+Validate Avro schemas against requirements.
 """
 
 import json
@@ -88,7 +88,7 @@ def validate_curated_schema(schema):
 def main():
     schemas_dir = Path(__file__).parent
     
-    print("🔍 Day 2 Schema Validation")
+    print("🔍 Schema Validation")
     print("=" * 60)
     
     # Load and validate raw event schema
@@ -149,7 +149,7 @@ def main():
     print("=" * 60)
     
     if raw_valid and curated_valid:
-        print("\n🎉 Day 2 Complete: All schemas valid!")
+        print("\n🎉 All schemas valid!")
         return 0
     else:
         print("\n⚠️  Some validations failed")
