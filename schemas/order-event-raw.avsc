@@ -1,0 +1,112 @@
+{
+  "type": "record",
+  "name": "OrderEventRaw",
+  "namespace": "com.orderup.events",
+  "doc": "Envelope schema for raw order events. This is the stable contract for all event types.",
+  "fields": [
+    {
+      "name": "event_id",
+      "type": "string",
+      "doc": "Unique identifier for this event (UUID). Used for deduplication."
+    },
+    {
+      "name": "event_type",
+      "type": {
+        "type": "enum",
+        "name": "OrderEventType",
+        "symbols": [
+          "ORDER_CREATED",
+          "ORDER_UPDATED",
+          "ORDER_ITEM_ADDED",
+          "ORDER_ITEM_REMOVED",
+          "ORDER_CONFIRMED",
+          "ORDER_CANCELLED",
+          "ORDER_COMPLETED"
+        ]
+      },
+      "doc": "Type of event. Determines the shape of the payload."
+    },
+    {
+      "name": "event_ts",
+      "type": "long",
+      "logicalType": "timestamp-millis",
+      "doc": "Event timestamp in milliseconds since epoch. This is event time, not processing time."
+    },
+    {
+      "name": "order_id",
+      "type": "string",
+      "doc": "Business key for the order. Used as Kafka message key for partitioning."
+    },
+    {
+      "name": "payload",
+      "type": [
+        {
+          "type": "record",
+          "name": "OrderCreatedPayload",
+          "fields": [
+            {"name": "customer_id", "type": "string"},
+            {"name": "restaurant_id", "type": "string"},
+            {"name": "initial_status", "type": "string", "default": "PENDING"}
+          ]
+        },
+        {
+          "type": "record",
+          "name": "OrderUpdatedPayload",
+          "fields": [
+            {"name": "old_status", "type": "string"},
+            {"name": "new_status", "type": "string"}
+          ]
+        },
+        {
+          "type": "record",
+          "name": "OrderItemAddedPayload",
+          "fields": [
+            {"name": "item_id", "type": "string"},
+            {"name": "item_name", "type": "string"},
+            {"name": "quantity", "type": "int"},
+            {"name": "price", "type": "double"}
+          ]
+        },
+        {
+          "type": "record",
+          "name": "OrderItemRemovedPayload",
+          "fields": [
+            {"name": "item_id", "type": "string"}
+          ]
+        },
+        {
+          "type": "record",
+          "name": "OrderConfirmedPayload",
+          "fields": [
+            {"name": "confirmed_by", "type": "string"},
+            {"name": "estimated_delivery_ts", "type": ["null", {"type": "long", "logicalType": "timestamp-millis"}], "default": null}
+          ]
+        },
+        {
+          "type": "record",
+          "name": "OrderCancelledPayload",
+          "fields": [
+            {"name": "cancelled_by", "type": "string"},
+            {"name": "reason", "type": ["null", "string"], "default": null}
+          ]
+        },
+        {
+          "type": "record",
+          "name": "OrderCompletedPayload",
+          "fields": [
+            {"name": "completed_ts", "type": "long", "logicalType": "timestamp-millis"},
+            {"name": "total_amount", "type": "double"}
+          ]
+        }
+      ],
+      "doc": "Event-specific payload. Union type allows different shapes based on event_type."
+    },
+    {
+      "name": "schema_version",
+      "type": "int",
+      "default": 1,
+      "doc": "Schema version for evolution tracking. Increment when making backward-compatible changes."
+    }
+  ]
+}
+

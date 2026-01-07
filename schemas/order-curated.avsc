@@ -1,0 +1,114 @@
+{
+  "type": "record",
+  "name": "OrderCurated",
+  "namespace": "com.orderup.curated",
+  "doc": "Curated order record. This is the ENGINE CONTRACT - both Kafka Streams and Flink must produce this exact schema.",
+  "fields": [
+    {
+      "name": "order_id",
+      "type": "string",
+      "doc": "Primary key. Business identifier for the order."
+    },
+    {
+      "name": "customer_id",
+      "type": "string",
+      "doc": "Foreign key to customer dimension."
+    },
+    {
+      "name": "restaurant_id",
+      "type": "string",
+      "doc": "Foreign key to restaurant dimension."
+    },
+    {
+      "name": "order_status",
+      "type": {
+        "type": "enum",
+        "name": "OrderStatus",
+        "symbols": [
+          "PENDING",
+          "CONFIRMED",
+          "CANCELLED",
+          "COMPLETED"
+        ]
+      },
+      "doc": "Current status of the order."
+    },
+    {
+      "name": "items",
+      "type": {
+        "type": "array",
+        "items": {
+          "type": "record",
+          "name": "OrderItem",
+          "fields": [
+            {"name": "item_id", "type": "string"},
+            {"name": "item_name", "type": "string"},
+            {"name": "quantity", "type": "int"},
+            {"name": "price", "type": "double"}
+          ]
+        }
+      },
+      "default": [],
+      "doc": "List of items in the order."
+    },
+    {
+      "name": "total_amount",
+      "type": "double",
+      "doc": "Computed total amount (sum of all item prices * quantities)."
+    },
+    {
+      "name": "created_at",
+      "type": "long",
+      "logicalType": "timestamp-millis",
+      "doc": "Timestamp of the first ORDER_CREATED event (event time)."
+    },
+    {
+      "name": "updated_at",
+      "type": "long",
+      "logicalType": "timestamp-millis",
+      "doc": "Timestamp of the most recent event (event time). Used for idempotency in Snowflake."
+    },
+    {
+      "name": "confirmed_at",
+      "type": ["null", {"type": "long", "logicalType": "timestamp-millis"}],
+      "default": null,
+      "doc": "Timestamp when order was confirmed, if applicable."
+    },
+    {
+      "name": "completed_at",
+      "type": ["null", {"type": "long", "logicalType": "timestamp-millis"}],
+      "default": null,
+      "doc": "Timestamp when order was completed, if applicable."
+    },
+    {
+      "name": "cancelled_at",
+      "type": ["null", {"type": "long", "logicalType": "timestamp-millis"}],
+      "default": null,
+      "doc": "Timestamp when order was cancelled, if applicable."
+    },
+    {
+      "name": "estimated_delivery_ts",
+      "type": ["null", {"type": "long", "logicalType": "timestamp-millis"}],
+      "default": null,
+      "doc": "Estimated delivery timestamp if confirmed."
+    },
+    {
+      "name": "event_count",
+      "type": "int",
+      "default": 0,
+      "doc": "Number of events processed for this order. Useful for debugging."
+    },
+    {
+      "name": "last_event_id",
+      "type": "string",
+      "doc": "Event ID of the most recent event processed. Used for deduplication tracking."
+    },
+    {
+      "name": "processing_ts",
+      "type": "long",
+      "logicalType": "timestamp-millis",
+      "doc": "Processing timestamp when this record was emitted by the engine. Not used for business logic, only observability."
+    }
+  ]
+}
+
